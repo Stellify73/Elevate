@@ -1149,8 +1149,7 @@ function answerQ6(idx){
     const gained=S.floor-prev;
     toast(`${prev} floors doubled to ${S.floor}!`,'up');
     showLiftImage('rise', gained, ()=>{
-      const showNext=()=>{document.getElementById('q6Next').classList.remove('hidden');};
-      if(!checkMilestone(showNext)) showNext();
+      if(S.floor>=PENTHOUSE) goWin(); else goFinish();
     });
   } else {
     S.floor=BASEMENT; updateUI(); toast('Wrong! Straight to the basement.','dn');
