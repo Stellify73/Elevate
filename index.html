@@ -196,12 +196,22 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 <div id="screen-q1intro" class="screen" style="background:radial-gradient(ellipse at 50% 40%, #1e1654 0%, var(--bg) 70%)">
   <div style="text-align:center;max-width:700px;padding:2rem">
     <div class="q-badge" style="margin-bottom:1.5rem;font-size:13px;padding:6px 18px">Question 1 — True or False</div>
-    <div style="font-size:clamp(28px,5vw,52px);font-weight:900;color:var(--text);line-height:1.2;margin-bottom:1rem">
-      Answer correctly and you'll rise
+    <div style="font-size:clamp(22px,4vw,36px);font-weight:900;color:var(--text);line-height:1.2;margin-bottom:1rem">It's a True or False question.</div>
+    <div style="font-size:clamp(18px,3vw,26px);font-weight:600;color:var(--text-muted);line-height:1.5;margin-bottom:2rem">Choose how many floors to bet —<br>get it right and you rise, get it wrong and you drop.</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.75rem;max-width:440px;margin:0 auto 2rem">
+      <button class="diff-choice" id="q1Easy" onclick="lockQ1Stake('easy')">
+        <div style="font-size:clamp(36px,7vw,56px);font-weight:900;line-height:1">1</div>
+        <div class="diff-choice-stake">Win +1 / Lose −1</div>
+      </button>
+      <button class="diff-choice" id="q1Medium" onclick="lockQ1Stake('medium')">
+        <div style="font-size:clamp(36px,7vw,56px);font-weight:900;line-height:1">3</div>
+        <div class="diff-choice-stake">Win +3 / Lose −3</div>
+      </button>
+      <button class="diff-choice" id="q1Hard" onclick="lockQ1Stake('hard')">
+        <div style="font-size:clamp(36px,7vw,56px);font-weight:900;line-height:1">5</div>
+        <div class="diff-choice-stake">Win +5 / Lose −5</div>
+      </button>
     </div>
-    <div style="font-size:clamp(80px,18vw,160px);font-weight:900;color:#1D9E75;line-height:1">5</div>
-    <div style="font-size:clamp(28px,5vw,52px);font-weight:900;color:var(--text);line-height:1.2;margin-bottom:2.5rem">floors!</div>
-    <button class="btn btn-primary btn-lg" onclick="showQ1()">Let's go ↑</button>
   </div>
 </div>
 
@@ -434,7 +444,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 <!-- MILESTONE -->
 <div id="screen-milestone" class="screen">
-  <div class="milestone-badge">Floor 10 reached</div>
+  <div class="milestone-badge">Floor 15 reached</div>
   <div class="milestone-icon" id="milestoneIcon">🍩</div>
   <div class="milestone-title">Executive Floor prize unlocked</div>
   <div class="milestone-prize" id="milestonePrize">Greggs Box<br>of Yum Yums</div>
@@ -543,13 +553,13 @@ const FALLBACK = {
 };
 
 // ── CONSTANTS ─────────────────────────────────────────────────────────────────
-const PENTHOUSE=20, BASEMENT=-1, CPF=2, PH_BONUS=50;
+const PENTHOUSE=25, BASEMENT=-1, CPF=2, PH_BONUS=50;
 const ZONES=[
-  {min:1, max:4,  lbl:"The Lobby",           col:"#888780"},
-  {min:5, max:9,  lbl:"The Mezzanine",        col:"#1D9E75"},
-  {min:10,max:14, lbl:"The Executive Floor",  col:"#378ADD"},
-  {min:15,max:19, lbl:"The Penthouse Foyer",  col:"#BA7517"},
-  {min:20,max:99, lbl:"The Penthouse",        col:"#534AB7"},
+  {min:1, max:5,  lbl:"The Lobby",           col:"#888780"},
+  {min:6, max:11, lbl:"The Mezzanine",        col:"#1D9E75"},
+  {min:12,max:18, lbl:"The Executive Floor",  col:"#378ADD"},
+  {min:19,max:24, lbl:"The Penthouse Foyer",  col:"#BA7517"},
+  {min:25,max:99, lbl:"The Penthouse",        col:"#534AB7"},
 ];
 let CHOICE_CATS = ['Film','Music','Sport','Travel','Fashion','Food & Drink','TV','Celebrity','Logos & Brands'];
 
@@ -699,7 +709,7 @@ function buildShaft(){
     const pos = (f-BASEMENT)/TOTAL;
     const bot = pos*(shaftH-carH)+(carH/2);
     const isPH = f===PENTHOUSE;
-    const isPrize = f===10;
+    const isPrize = f===15;
     const isNamed = [0,5,10,15,20].includes(f)||f===BASEMENT;
 
     const line = document.createElement('div');
@@ -788,7 +798,7 @@ const GREGGS_PRIZES = [
 ];
 
 function checkMilestone(next){
-  if(S.floor>=10&&!S.milestoneAwarded){
+  if(S.floor>=15&&!S.milestoneAwarded){
     S.milestoneAwarded = true;
     S.milestoneNext = next;
     // Pick a random Greggs prize
@@ -878,15 +888,29 @@ function startGame(){
 }
 function resetGame(){ stopTimer(); showScreen('title'); }
 
-// Q1 — show intro screen first, then question
+// Q1 — show intro screen with stake choice first
 function doQ1Ready(){
   S.currentQ = pick(DB['True Or False']||[]);
+  // Reset stake buttons
+  ['q1Easy','q1Medium','q1Hard'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.disabled=false;el.className='diff-choice';}
+  });
   showScreen('q1intro');
+}
+
+function lockQ1Stake(diff){
+  S.diff=diff;
+  const delta={easy:1,medium:3,hard:5}[diff];
+  ['easy','medium','hard'].forEach(d=>{
+    const el=document.getElementById('q1'+d.charAt(0).toUpperCase()+d.slice(1));
+    if(el){el.className='diff-choice'+(d===diff?' sel-'+d:'');el.disabled=true;}
+  });
+  setTimeout(()=>showQ1(), 800);
 }
 
 function showQ1(){
   showScreen('game');
-  // Show answers (TRUE/FALSE) with reveal button — question hidden
   showPanels('qpQ1Answers','apQ1Answers');
   revealed=false;
 }
@@ -911,13 +935,17 @@ function answerTF(ans){
     el.className='tf-btn'+((correct==='TRUE'&&isTrue)||(correct==='FALSE'&&!isTrue)?' correct':' wrong');
     el.disabled=true;
   });
+  const delta={easy:1,medium:3,hard:5}[S.diff]||1;
   if(ok){
-    S.floor+=5; updateUI(); toast('Correct! Up 5 floors.','up');
+    S.floor+=delta; updateUI(); toast(`Correct! Up ${delta} floor${delta>1?'s':''}.`,'up');
     const next=()=>{ S.qIdx=2; showLevelUp('After Question 1', ()=>doCatAnnounce()); };
-    showLiftImage('rise', 5, ()=>{ if(!checkMilestone(next)) next(); });
+    showLiftImage('rise', delta, ()=>{ if(!checkMilestone(next)) next(); });
   } else {
-    S.floor=BASEMENT; updateUI(); toast('Wrong! Straight to the basement.','dn');
-    showLiftImage('fall', 5, ()=>goLose("Got the first one wrong — no cash today."));
+    S.floor-=delta; updateUI(); toast(`Wrong! Down ${delta} floor${delta>1?'s':''}.`,'dn');
+    showLiftImage('fall', delta, ()=>{
+      if(S.floor<=BASEMENT) goLose("Got question 1 wrong — no cash today.");
+      else { S.qIdx=2; showLevelUp('After Question 1', ()=>doCatAnnounce()); }
+    });
   }
 }
 
@@ -993,8 +1021,8 @@ function revealQuestion(){
     grid.appendChild(b);
   });
   revealed=false;
-  const delta={easy:1,medium:2,hard:3}[S.diff];
-  const penalty=delta*2;
+  const delta={easy:1,medium:3,hard:5}[S.diff];
+  const penalty=delta;
   startTimer('tf2','tl2',()=>{
     if(revealed)return; revealed=true;
     S.floor-=penalty; updateUI();
@@ -1051,8 +1079,8 @@ function answerQ(idx){
   allPanels.forEach(id=>{ const el=document.getElementById(id); if(el) el.classList.add('hidden'); });
   const {correctIdx}=S.currentAnswers;
   const ok=idx===correctIdx;
-  const delta={easy:1,medium:2,hard:3}[S.diff];
-  const penalty=delta*2;
+  const delta={easy:1,medium:3,hard:5}[S.diff];
+  const penalty=delta;
   if(ok){
     S.floor+=delta; updateUI(); toast(`Correct! Up ${delta} floor${delta>1?'s':''}.`,'up');
     const next=()=>{
